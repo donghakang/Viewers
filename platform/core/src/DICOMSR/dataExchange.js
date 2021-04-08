@@ -6,6 +6,7 @@ import {
   stowSRFromMeasurements,
 } from './handleStructuredReport';
 import findMostRecentStructuredReport from './utils/findMostRecentStructuredReport';
+import { onLog } from './utils/log';
 
 /**
  *
@@ -35,7 +36,9 @@ const retrieveMeasurements = server => {
   const latestSeries = findMostRecentStructuredReport(studies);
 
   if (!latestSeries) {
-    console.warn('[DICOMSR] Could not found supported SR series');
+    const message = 'Could not found supported SR series';
+    console.warn(`[DICOMSR] ${message}`);
+    onLog({ type: 'warning', message });
     return Promise.resolve({});
   }
 

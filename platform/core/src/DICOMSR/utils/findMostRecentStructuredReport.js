@@ -1,3 +1,5 @@
+import { onLog } from './log';
+
 /**
  * Should find the most recent Structured Report metadata
  *
@@ -49,7 +51,12 @@ const isStructuredReportSeries = series => {
   const isSRSeries = supportedSopClassUIDs.includes(SOPClassUID);
 
   if (!isSRSeries && Modality === 'SR') {
-    console.warn('[DICOMSR] Unsupported SOPClassUID:', SOPClassUID);
+    const message = `Unsupported SOPClassUID: ${SOPClassUID}`;
+    console.warn(`[DICOMSR] ${message}`);
+    onLog({
+      type: 'warning',
+      message: `Unsupported SOPClassUID: ${SOPClassUID}`,
+    });
   }
 
   return isSRSeries;
