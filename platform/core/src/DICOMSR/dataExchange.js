@@ -34,7 +34,10 @@ const retrieveMeasurements = server => {
 
   const latestSeries = findMostRecentStructuredReport(studies);
 
-  if (!latestSeries) return Promise.resolve({});
+  if (!latestSeries) {
+    console.warn('[DICOMSR] Could not found supported SR series');
+    return Promise.resolve({});
+  }
 
   return retrieveMeasurementFromSR(latestSeries, studies, serverUrl);
 };

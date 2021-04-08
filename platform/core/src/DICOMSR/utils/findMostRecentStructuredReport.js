@@ -39,14 +39,20 @@ const findMostRecentStructuredReport = studies => {
  */
 const isStructuredReportSeries = series => {
   const supportedSopClassUIDs = [
-    '1.2.840.10008.5.1.4.1.1.88.22',
-    '1.2.840.10008.5.1.4.1.1.11.1',
+    '1.2.840.10008.5.1.4.1.1.88.22' /** Enhanced SR Storage */,
+    '1.2.840.10008.5.1.4.1.1.11.1' /** Grayscale Softcopy Presentation State Storage */,
   ];
 
   const firstInstance = series.getFirstInstance();
-  const SOPClassUID = firstInstance.getData().metadata.SOPClassUID;
+  const { SOPClassUID, Modality } = firstInstance.getData().metadata;
 
-  return supportedSopClassUIDs.includes(SOPClassUID);
+  const isSRSeries = supportedSopClassUIDs.includes(SOPClassUID);
+
+  if (!isSRSeries && Modality === 'SR') {
+    console.warn('[DICOMSR] Unsupported SOPClassUID:', SOPClassUID);
+  }
+
+  return isSRSeries;
 };
 
 /**
