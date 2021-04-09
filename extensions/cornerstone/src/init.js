@@ -7,6 +7,7 @@ import initCornerstoneTools from './initCornerstoneTools.js';
 import measurementServiceMappingsFactory from './utils/measurementServiceMappings/measurementServiceMappingsFactory';
 
 /**
+ *  Also, Modified by Dongha Kang
  *
  * @param {Object} servicesManager
  * @param {Object} configuration
@@ -15,27 +16,33 @@ import measurementServiceMappingsFactory from './utils/measurementServiceMapping
 export default function init({ servicesManager, configuration }) {
   const { UIDialogService, MeasurementService } = servicesManager.services;
 
-  const callInputDialog = (data, event, callback) => {
-    if (UIDialogService) {
-      let dialogId = UIDialogService.create({
-        centralize: true,
-        isDraggable: false,
-        content: SimpleDialog.InputDialog,
-        useLastPosition: false,
-        showOverlay: true,
-        contentProps: {
-          title: 'Enter your annotation',
-          label: 'New label',
-          measurementData: data ? { description: data.text } : {},
-          onClose: () => UIDialogService.dismiss({ id: dialogId }),
-          onSubmit: value => {
-            callback(value);
-            UIDialogService.dismiss({ id: dialogId });
-          },
-        },
-      });
-    }
-  };
+  // - Annotation을 넣을때, UI. 작동 안됨.
+  // const callInputDialog = (data, event, callback) => {
+  //   if (UIDialogService) {
+  //     let dialogId = UIDialogService.create({
+  //       centralize: true,
+  //       isDraggable: false,
+  //       content: SimpleDialog.InputDialog,
+  //       useLastPosition: false,
+  //       showOverlay: true,
+  //       contentProps: {
+  //         title: 'Enter your annotation',
+  //         label: 'New label',
+  //         measurementData: data ? { description: data.text } : {},
+  //         onClose: () => {
+  //           UIDialogService.dismiss({ id: dialogId });
+  //         },
+  //         onSubmit: value => {
+  //           callback(value);
+  //           UIDialogService.dismiss({ id: dialogId });
+
+  //           console.log(data);
+  //           console.log('init.js, dialogID: ' + dialogId);
+  //         },
+  //       },
+  //     });
+  //   }
+  // };
 
   const { csToolsConfig } = configuration;
   const metadataProvider = OHIF.cornerstone.metadataProvider;
@@ -88,14 +95,15 @@ export default function init({ servicesManager, configuration }) {
 
   /* Add extension tools configuration here. */
   const internalToolsConfig = {
-    ArrowAnnotate: {
-      configuration: {
-        getTextCallback: (callback, eventDetails) =>
-          callInputDialog(null, eventDetails, callback),
-        changeTextCallback: (data, eventDetails, callback) =>
-          callInputDialog(data, eventDetails, callback),
-      },
-    },
+    //   // TODO: Error occurred from here, This will unable the UIDialogService
+    // ArrowAnnotate: {
+    // configuration: {
+    //   getTextCallback: (callback, eventDetails) =>
+    //     callInputDialog(null, eventDetails, callback),
+    //   changeTextCallback: (data, eventDetails, callback) =>
+    //     callInputDialog(data, eventDetails, callback),
+    // },
+    // },
   };
 
   /* Abstract tools configuration using extension configuration. */
@@ -155,7 +163,7 @@ export default function init({ servicesManager, configuration }) {
 
   csTools.setToolActive('Pan', { mouseButtonMask: 4 });
   csTools.setToolActive('Zoom', { mouseButtonMask: 2 });
-  csTools.setToolActive('Wwwc', { mouseButtonMask: 1 });
+  csTools.setToolPassive('Wwwc', { mouseButtonMask: 1 });
   csTools.setToolActive('StackScrollMouseWheel', {}); // TODO: Empty options should not be required
   csTools.setToolActive('PanMultiTouch', { pointers: 2 }); // TODO: Better error if no options
   csTools.setToolActive('ZoomTouchPinch', {});
@@ -178,6 +186,11 @@ const _initMeasurementService = measurementService => {
     points: 2,
   };
 
+  const matchingCriteriaAngle = {
+    valueType: measurementService.VALUE_TYPES.POLYLINE,
+    points: 3,
+  };
+
   /* Mappings */
   measurementService.addMapping(
     csToolsVer4MeasurementSource,
@@ -187,9 +200,45 @@ const _initMeasurementService = measurementService => {
     toMeasurement
   );
 
+  // Dongha Kang
+  // -- added to avoid the warnings that saying
+  // `Failed to map '${sourceInfo}' measurement for definition ${definition}:`,
+  measurementService.addMapping(
+    csToolsVer4MeasurementSource,
+    'ArrowAnnotate',
+    matchingCriteria,
+    toAnnotation,
+    toMeasurement
+  );
+
+  measurementService.addMapping(
+    csToolsVer4MeasurementSource,
+    'Angle',
+    matchingCriteriaAngle,
+    toAnnotation,
+    toMeasurement
+  );
+
+  measurementService.addMapping(
+    csToolsVer4MeasurementSource,
+    'stack',
+    matchingCriteria,
+    toAnnotation,
+    toMeasurement
+  );
+
+  measurementService.addMapping(
+    csToolsVer4MeasurementSource,
+    'stackPrefetch',
+    matchingCriteria,
+    toAnnotation,
+    toMeasurement
+  );
+
   return csToolsVer4MeasurementSource;
 };
 
+// TODO: 여기가 아마도 annotation 과 관련되 데이터들
 const _connectToolsToMeasurementService = measurementService => {
   const csToolsVer4MeasurementSource = _initMeasurementService(
     measurementService
@@ -239,6 +288,7 @@ const _connectToolsToMeasurementService = measurementService => {
         }
       );
 
+      // MARK: 여기가 annotation을 등록, 그 후 움직일때 일어나는 코드
       const addOrUpdateMeasurement = csToolsAnnotation => {
         try {
           const { toolName, toolType, measurementData } = csToolsAnnotation;

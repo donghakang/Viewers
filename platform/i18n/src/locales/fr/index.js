@@ -1,6 +1,7 @@
 import AboutModal from './AboutModal.json';
 import Buttons from './Buttons.json';
 import CineDialog from './CineDialog.json';
+
 import Common from './Common.json';
 import DatePicker from './DatePicker.json';
 import Header from './Header.json';
@@ -9,8 +10,8 @@ import StudyList from './StudyList.json';
 import UserPreferencesModal from './UserPreferencesModal.json';
 import ViewportDownloadForm from './ViewportDownloadForm.json';
 
-export default { 
-  'fr': {
+export default {
+  fr: {
     AboutModal,
     Buttons,
     CineDialog,
@@ -21,5 +22,5 @@ export default {
     StudyList,
     UserPreferencesModal,
     ViewportDownloadForm,
-  }
+  },
 };

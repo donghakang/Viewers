@@ -15,6 +15,8 @@ import './ToolbarRow.css';
 import { commandsManager, extensionManager } from './../App.js';
 
 import ConnectedCineDialog from './ConnectedCineDialog';
+import ConnectedThresholdDialog from './ConnectedThresholdDialog';
+
 import ConnectedLayoutButton from './ConnectedLayoutButton';
 import { withAppContext } from '../context/AppContext';
 
@@ -59,9 +61,6 @@ class ToolbarRow extends Component {
     this.seriesPerStudyCount = [];
 
     this._handleBuiltIn = _handleBuiltIn.bind(this);
-    this._onDerivedDisplaySetsLoadedAndCached = this._onDerivedDisplaySetsLoadedAndCached.bind(
-      this
-    );
 
     this.updateButtonGroups();
   }
@@ -109,32 +108,6 @@ class ToolbarRow extends Component {
       value: 'studies',
       icon: 'th-large',
       bottomLabel: this.props.t('Series'),
-    });
-  }
-
-  componentDidMount() {
-    /*
-     * TODO: Improve the way we notify parts of the app
-     * that depends on derived display sets to be loaded.
-     * (Implement pubsub for better tracking of derived display sets)
-     */
-    document.addEventListener(
-      'deriveddisplaysetsloadedandcached',
-      this._onDerivedDisplaySetsLoadedAndCached
-    );
-  }
-
-  componentWillUnmount() {
-    document.removeEventListener(
-      'deriveddisplaysetsloadedandcached',
-      this._onDerivedDisplaySetsLoadedAndCached
-    );
-  }
-
-  _onDerivedDisplaySetsLoadedAndCached() {
-    this.updateButtonGroups();
-    this.setState({
-      toolbarButtons: _getVisibleToolbarButtons.call(this),
     });
   }
 
@@ -287,6 +260,7 @@ function _getExpandableButtonComponent(button, activeButtons) {
   );
 }
 
+// 버튼 셋업,
 function _getDefaultButtonComponent(button, activeButtons) {
   return (
     <ToolbarButton
@@ -309,6 +283,7 @@ function _getButtonComponents(toolbarButtons, activeButtons) {
     const hasNestedButtonDefinitions = button.buttons && button.buttons.length;
 
     if (hasCustomComponent) {
+      // console.log('custom button: ', button.label);    --> 2D MPR
       return _getCustomButtonComponent.call(_this, button, activeButtons);
     }
 
@@ -337,7 +312,7 @@ function _handleToolbarButtonClick(button, evt, props) {
 
   if (button.commandName) {
     const options = Object.assign({ evt }, button.commandOptions);
-    commandsManager.runCommand(button.commandName, options);
+    commandsManager.runCommand(button.commandName, options); // changes the stae of command and run
   }
 
   // TODO: Use Types ENUM
@@ -348,6 +323,7 @@ function _handleToolbarButtonClick(button, evt, props) {
       ({ options }) => options && !options.togglable
     );
     this.setState({ activeButtons: [...toggables, button] });
+    console.log(toggables, button, activeButtons);
   } else if (button.type === 'builtIn') {
     this._handleBuiltIn(button);
   }
@@ -396,6 +372,34 @@ function _handleBuiltIn(button) {
         .getBoundingClientRect();
       const newDialogId = dialog.create({
         content: ConnectedCineDialog,
+        defaultPosition: {
+          x: x + spacing || 0,
+          y: y + spacing || 0,
+        },
+      });
+      this.setState(state => ({
+        dialogId: newDialogId,
+        activeButtons: [...state.activeButtons, button],
+      }));
+    }
+  }
+
+  if (options.behavior === 'THRESHOLD') {
+    if (dialogId) {
+      dialog.dismiss({ id: dialogId });
+      this.setState(state => ({
+        dialogId: null,
+        activeButtons: [
+          ...state.activeButtons.filter(button => button.id !== id),
+        ],
+      }));
+    } else {
+      const spacing = 20;
+      const { x, y } = document
+        .querySelector(`.ViewerMain`)
+        .getBoundingClientRect();
+      const newDialogId = dialog.create({
+        content: ConnectedThresholdDialog,
         defaultPosition: {
           x: x + spacing || 0,
           y: y + spacing || 0,

@@ -132,7 +132,6 @@ class OHIFCornerstoneViewport extends Component {
       displaySetInstanceUID,
       stack,
     };
-
     return viewportData;
   };
 
@@ -235,8 +234,8 @@ class OHIFCornerstoneViewport extends Component {
           viewportIndex={viewportIndex}
           imageIds={imageIds}
           imageIdIndex={currentImageIdIndex}
-          onNewImageDebounced={newImageHandler}
-          onNewImageDebounceTime={300}
+          onNewImage={newImageHandler}
+          onNewImageDebounceTime={700}
           // ~~ Connected (From REDUX)
           // frameRate={frameRate}
           // isPlaying={false}

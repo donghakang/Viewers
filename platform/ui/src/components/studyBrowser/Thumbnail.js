@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useDrag } from 'react-dnd';
 import ImageThumbnail from './ImageThumbnail';
 import classNames from 'classnames';
-import { Icon } from './../../elements/Icon';
-import { Tooltip } from './../tooltip';
-import { OverlayTrigger } from './../overlayTrigger';
 
 import './Thumbnail.styl';
 
@@ -14,22 +11,7 @@ function ThumbnailFooter({
   SeriesNumber,
   InstanceNumber,
   numImageFrames,
-  hasWarnings
 }) {
-  const [warningList, warningListSet] = useState([]);
-
-  useEffect(() => {
-    let unmounted = false
-    hasWarnings.then(response => {
-      if (!unmounted) {
-        warningListSet(response)
-      }
-    })
-    return () => {
-      unmounted = true
-    }
-  }, [])
-
   const infoOnly = !SeriesDescription;
 
   const getInfo = (value, icon, className = '') => {
@@ -40,73 +22,28 @@ function ThumbnailFooter({
       </div>
     );
   };
-
-  const getWarningContent = (warningList) => {
-    if (Array.isArray(warningList)) {
-      const listedWarnings = warningList.map((warn, index) => {
-        return <li key={index}>{warn}</li>;
-      });
-
-      return <ol>{listedWarnings}</ol>;
-    } else {
-      return <React.Fragment>{warningList}</React.Fragment>;
-    }
-  };
-
-  const getWarningInfo = (SeriesNumber, warningList) => {
-      return(
-        <React.Fragment>
-        {warningList.length != 0 ? (
-          <OverlayTrigger
-            key={SeriesNumber}
-            placement="left"
-            overlay={
-              <Tooltip
-                placement="left"
-                className="in tooltip-warning"
-                id="tooltip-left"
-              >
-                <div className="warningTitle">Series Inconsistencies</div>
-                <div className="warningContent">{getWarningContent(warningList)}</div>
-              </Tooltip>
-            }
-          >
-            <div className={classNames('warning')}>
-              <span className="warning-icon">
-                <Icon name="exclamation-triangle" />
-              </span>
-            </div>
-          </OverlayTrigger>
-        ) : (
-          <React.Fragment></React.Fragment>
-          )}
-      </React.Fragment>
-      );
-  };
   const getSeriesInformation = (
     SeriesNumber,
     InstanceNumber,
-    numImageFrames,
-    warningList
+    numImageFrames
   ) => {
     if (!SeriesNumber && !InstanceNumber && !numImageFrames) {
       return;
     }
-    const seriesInformation =
+
+    return (
       <div className="series-information">
         {getInfo(SeriesNumber, 'S:')}
         {getInfo(InstanceNumber, 'I:')}
         {getInfo(numImageFrames, '', 'image-frames')}
-        {getWarningInfo(SeriesNumber, warningList)}
       </div>
-
-    return (seriesInformation);
+    );
   };
 
   return (
     <div className={classNames('series-details', { 'info-only': infoOnly })}>
       <div className="series-description">{SeriesDescription}</div>
-      {getSeriesInformation(SeriesNumber, InstanceNumber, numImageFrames, warningList)}
+      {getSeriesInformation(SeriesNumber, InstanceNumber, numImageFrames)}
     </div>
   );
 }
@@ -123,7 +60,6 @@ function Thumbnail(props) {
     numImageFrames,
     SeriesDescription,
     SeriesNumber,
-    hasWarnings,
     stackPercentComplete,
     StudyInstanceUID,
     onClick,
@@ -190,14 +126,13 @@ Thumbnail.propTypes = {
   stackPercentComplete: PropTypes.number,
   /**
   altImageText will be used when no imageId or imageSrc is provided.
-  It will be displayed inside the <div>. This is useful when it is difficult
+It will be displayed inside the <div>. This is useful when it is difficult
   to make a preview for a type of DICOM series (e.g. DICOM-SR)
   */
   altImageText: PropTypes.string,
   SeriesDescription: PropTypes.string,
   SeriesNumber: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   InstanceNumber: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  hasWarnings: PropTypes.instanceOf(Promise),
   numImageFrames: PropTypes.number,
   onDoubleClick: PropTypes.func,
   onClick: PropTypes.func,

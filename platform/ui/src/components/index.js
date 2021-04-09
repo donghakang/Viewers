@@ -9,6 +9,7 @@ import { HotkeyField } from './customForm';
 import { LanguageSwitcher } from './languageSwitcher';
 import { Checkbox } from './checkbox';
 import { CineDialog } from './cineDialog';
+import { ThresholdDialog } from './thresholdDialog';
 import { ViewportDownloadForm } from './content/viewportDownloadForm';
 import { QuickSwitch } from './quickSwitch';
 import { RoundedButtonGroup } from './roundedButtonGroup';
@@ -32,6 +33,7 @@ export {
   ContextMenu,
   Checkbox,
   CineDialog,
+  ThresholdDialog,
   ViewportDownloadForm,
   LayoutButton,
   LayoutChooser,
@@ -59,5 +61,5 @@ export {
   Tooltip,
   AboutContent,
   OHIFModal,
-  ErrorPage
+  ErrorPage,
 };

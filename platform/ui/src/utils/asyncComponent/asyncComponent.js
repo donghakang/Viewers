@@ -10,7 +10,6 @@ export const retryImport = (fn, retriesLeft = 5, interval = 1000) =>
           reject(error);
           return;
         }
-
         /* Passing on "reject" is the important part */
         retry(fn, retriesLeft - 1, interval).then(resolve, reject);
       }, interval);

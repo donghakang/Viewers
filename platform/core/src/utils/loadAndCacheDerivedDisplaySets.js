@@ -49,7 +49,9 @@ import studyMetadataManager from './studyMetadataManager';
  */
 const loadAndCacheDerivedDisplaySets = (referencedDisplaySet, studies) => {
   const { StudyInstanceUID, SeriesInstanceUID } = referencedDisplaySet;
+
   const promises = [];
+
   const studyMetadata = studyMetadataManager.get(StudyInstanceUID);
 
   if (!studyMetadata) {
@@ -108,16 +110,6 @@ const loadAndCacheDerivedDisplaySets = (referencedDisplaySet, studies) => {
     recentDisplaySet.isLoading = true;
 
     promises.push(recentDisplaySet.load(referencedDisplaySet, studies));
-  });
-
-  Promise.all(promises).then(() => {
-    /*
-     * TODO: Improve the way we notify parts of the app
-     * that depends on derived display sets to be loaded.
-     * (Implement pubsub for better tracking of derived display sets)
-     */
-    const event = new CustomEvent('deriveddisplaysetsloadedandcached');
-    document.dispatchEvent(event);
   });
 
   return promises;

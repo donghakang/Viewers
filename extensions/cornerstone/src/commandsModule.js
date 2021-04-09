@@ -73,6 +73,7 @@ const commandsModule = ({ servicesManager }) => {
 
       if (enabledElement) {
         let viewport = cornerstone.getViewport(enabledElement);
+        // console.log(viewport.voi);
         viewport.invert = !viewport.invert;
         cornerstone.setViewport(enabledElement, viewport);
       }
@@ -268,7 +269,6 @@ const commandsModule = ({ servicesManager }) => {
       SOPInstanceUID,
       frameIndex,
       activeViewportIndex,
-      refreshViewports = true,
     }) => {
       const study = studyMetadataManager.get(StudyInstanceUID);
 
@@ -279,10 +279,6 @@ const commandsModule = ({ servicesManager }) => {
         );
       });
 
-      if (!displaySet) {
-        return;
-      }
-
       displaySet.SOPInstanceUID = SOPInstanceUID;
       displaySet.frameIndex = frameIndex;
 
@@ -290,9 +286,7 @@ const commandsModule = ({ servicesManager }) => {
         setViewportSpecificData(activeViewportIndex, displaySet)
       );
 
-      if (refreshViewports) {
-        refreshCornerstoneViewports();
-      }
+      refreshCornerstoneViewports();
     },
   };
 
